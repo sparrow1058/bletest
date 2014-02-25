@@ -3,6 +3,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/find_me" />
+
+    <Switch
+        android:id="@+id/call_id"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:text="@string/call_alert" />
+
+    <Switch
+        android:id="@+id/msg_id"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:text="@string/msg_alert" />
+
+    <Switch
+        android:id="@+id/loss_id"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:text="@string/loss_alert" />
+
+    <Switch
+        android:id="@+id/loss_range_id"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:text="@string/loss_range" />
+
+    <Switch
+        android:id="@+id/warning_level_id"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:text="@string/warning_level" />
 
 </LinearLayout>

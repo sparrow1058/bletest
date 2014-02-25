@@ -34,4 +34,11 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
+    <string name="call_alert">Call Alert</string>
+    <string name="msg_alert">Message Alert</string>
+    <string name="loss_alert">Loss Alert</string>
+    <string name="loss_range">Loss Range</string>
+    <string name="warning_level">Warning Level</string>
+    <string name="find_me">Find Me</string>
+    <string name="menu_set">Setting</string>
 </resources>

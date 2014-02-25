@@ -187,6 +187,13 @@ public class DeviceControlActivity extends Activity {
 					mBluetoothLeService.wirteCharacteristic(characteristic);
 				}
 				if (characteristic.getUuid().toString()
+						.equals("00002a06-0000-1000-8000-00805f9b34fb")) {
+					characteristic.setValue("1".getBytes());
+					mBluetoothLeService.wirteCharacteristic(characteristic);
+					System.out.println("send a");
+				}
+					//leaf  // write find me
+				if (characteristic.getUuid().toString()
 						.equals("0000fff5-0000-1000-8000-00805f9b34fb")) {
 					characteristic.setValue("S".getBytes());
 					mBluetoothLeService.wirteCharacteristic(characteristic);
@@ -283,6 +290,7 @@ public class DeviceControlActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.gatt_services, menu);
+		menu.findItem(R.id.menu_findme).setVisible(true);
 		if (mConnected) {
 			menu.findItem(R.id.menu_connect).setVisible(false);
 			menu.findItem(R.id.menu_disconnect).setVisible(true);
@@ -305,8 +313,16 @@ public class DeviceControlActivity extends Activity {
 		case android.R.id.home:
 			onBackPressed();
 			return true;
+		case R.id.menu_findme:
+			findMeFunction();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void findMeFunction() {
+		// TODO 自动生成的方法存根
+		
 	}
 
 	private void updateConnectionState(final int resourceId) {

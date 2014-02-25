@@ -82,6 +82,7 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        	menu.findItem(R.id.menu_set);
         if (!mScanning) {
             menu.findItem(R.id.menu_stop).setVisible(false);
             menu.findItem(R.id.menu_scan).setVisible(true);
@@ -105,6 +106,8 @@ public class DeviceScanActivity extends ListActivity {
             case R.id.menu_stop:
                 scanLeDevice(false);
                 break;
+            case R.id.menu_set:
+            	showBleSetting();
         }
         return true;
     }
@@ -143,7 +146,12 @@ public class DeviceScanActivity extends ListActivity {
         scanLeDevice(false);
         mLeDeviceListAdapter.clear();
     }
-
+    private void showBleSetting()
+    {
+//    	final BluetoothDevice device=mLeDeviceListAdapter.getDevice();
+    	final Intent intent=new Intent(this,DeviceSettingActivity.class);
+    	startActivity(intent);
+    }
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
