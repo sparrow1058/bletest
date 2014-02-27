@@ -49,6 +49,7 @@ public class BluetoothLeService extends Service {
 	private String mBluetoothDeviceAddress;
 	private BluetoothGatt mBluetoothGatt;
 	private int mConnectionState = STATE_DISCONNECTED;
+	public int remoteRssi=0;	
 
 	private static final int STATE_DISCONNECTED = 0;
 	private static final int STATE_CONNECTING = 1;
@@ -58,6 +59,7 @@ public class BluetoothLeService extends Service {
 	public final static String ACTION_GATT_DISCONNECTED = "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
 	public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
 	public final static String ACTION_DATA_AVAILABLE = "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+	public final static String ACTION_READ_RSSI="com.example.bluetooth.le.ACTION_READ_RSSI";
 	public final static String EXTRA_DATA = "com.example.bluetooth.le.EXTRA_DATA";
 
 	public final static UUID UUID_HEART_RATE_MEASUREMENT = UUID
@@ -114,7 +116,6 @@ public class BluetoothLeService extends Service {
 			System.out.println("onDescriptorWriteonDescriptorWrite = " + status
 					+ ", descriptor =" + descriptor.getUuid().toString());
 		}
-
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt,
 				BluetoothGattCharacteristic characteristic) {
@@ -129,6 +130,12 @@ public class BluetoothLeService extends Service {
 		@Override
 		public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
 			System.out.println("rssi = " + rssi);
+			if (status == BluetoothGatt.GATT_SUCCESS) {
+				remoteRssi=rssi;
+				broadcastUpdate(ACTION_READ_RSSI);
+			} else {
+				Log.w(TAG, "onServicesDiscovered received: " + status);
+			}
 		}
 
 		public void onCharacteristicWrite(BluetoothGatt gatt,
@@ -317,7 +324,16 @@ public class BluetoothLeService extends Service {
 		mBluetoothGatt.writeCharacteristic(characteristic);
 
 	}
+	public void readRemoteRssi (BluetoothGattCharacteristic characteristic) {
 
+		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+			Log.w(TAG, "BluetoothAdapter not initialized");
+			return;
+		}
+
+		mBluetoothGatt.readRemoteRssi();
+
+	}
 	/**
 	 * Request a read on a given {@code BluetoothGattCharacteristic}. The read
 	 * result is reported asynchronously through the

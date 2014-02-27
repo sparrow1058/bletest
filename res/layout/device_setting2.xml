@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory android:title="其它功能设定">	
+ 		<ListPreference 
+ 			android:key="alert_list"
+ 		    android:title="警告等级" 
+ 		    android:dialogTitle="警告等级"
+ 		    android:entries="@array/alert_level"
+			android:entryValues="@array/alert_level" >
+		</ListPreference>
+		<ListPreference 
+ 			android:key="time_list"
+ 		    android:title="响应时间" 
+ 		    android:dialogTitle="响应时间"
+ 		    android:entries="@array/alert_time"
+			android:entryValues="@array/alert_time" >
+		</ListPreference>	
+  	<CheckBoxPreference android:key="checkbox_0"
+  	    android:title="防丢"
+		android:summary="设定是否打开防丢" >
+	</CheckBoxPreference>
+	<CheckBoxPreference android:key="checkbox_1"
+  	    android:title="震动"
+		android:summary="是否震动" >
+	</CheckBoxPreference>
+  	<CheckBoxPreference android:key="checkbox_2"
+  	    android:title="来电提醒"
+		android:summary="来电提醒" >
+	</CheckBoxPreference>
+  	  	<CheckBoxPreference android:key="checkbox_3"
+  	    android:title="短信提醒"
+		android:summary="短信提醒" >
+	</CheckBoxPreference>
+  	
+  		</PreferenceCategory>
+	
+</PreferenceScreen>

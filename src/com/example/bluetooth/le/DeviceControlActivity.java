@@ -54,6 +54,7 @@ public class DeviceControlActivity extends Activity {
 	private final static String TAG = DeviceControlActivity.class
 			.getSimpleName();
 
+	public static final String BLE_TAG="leaf ble";
 	public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
 	public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
@@ -98,6 +99,7 @@ public class DeviceControlActivity extends Activity {
 	// ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
 	// ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
 	// ACTION_DATA_AVAILABLE: received data from the device. This can be a
+	//ACTION_READ_RSSI: // read the rssi
 	// result of read
 	// or notification operations.
 	private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
@@ -124,6 +126,8 @@ public class DeviceControlActivity extends Activity {
 			} else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 				displayData(intent
 						.getStringExtra(BluetoothLeService.EXTRA_DATA));
+			}else if(BluetoothLeService.ACTION_READ_RSSI.equals(action)){
+				Log.v(BLE_TAG,"RSSI=" +mBluetoothLeService.remoteRssi);
 			}
 		}
 	};
@@ -138,7 +142,8 @@ public class DeviceControlActivity extends Activity {
 		@Override
 		public boolean onChildClick(ExpandableListView parent, View v,
 				int groupPosition, int childPosition, long id) {
-
+			byte[] bb=new byte[1];
+			
 			if (mGattCharacteristics != null) {
 				final BluetoothGattCharacteristic characteristic = mGattCharacteristics
 						.get(groupPosition).get(childPosition);
@@ -188,9 +193,19 @@ public class DeviceControlActivity extends Activity {
 				}
 				if (characteristic.getUuid().toString()
 						.equals("00002a06-0000-1000-8000-00805f9b34fb")) {
-					characteristic.setValue("1".getBytes());
+					bb[0]=0;
+					characteristic.setValue(2, 17, 0);					
 					mBluetoothLeService.wirteCharacteristic(characteristic);
+					
+					mBluetoothLeService.readRemoteRssi(characteristic);
 					System.out.println("send a");
+				}
+				if (characteristic.getUuid().toString()
+						.equals("00002a19-0000-1000-8000-00805f9b34fb")) {
+					//characteristic.setValue("1".getBytes());
+					mBluetoothLeService.readCharacteristic(characteristic);
+					bb=characteristic.getValue();
+					Log.v("leaf","bat"+bb);
 				}
 					//leaf  // write find me
 				if (characteristic.getUuid().toString()
@@ -402,6 +417,7 @@ public class DeviceControlActivity extends Activity {
 		intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
 		intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
 		intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+		intentFilter.addAction(BluetoothLeService.ACTION_READ_RSSI);
 		return intentFilter;
 	}
 }

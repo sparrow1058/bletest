@@ -150,6 +150,7 @@ public class DeviceScanActivity extends ListActivity {
     {
 //    	final BluetoothDevice device=mLeDeviceListAdapter.getDevice();
     	final Intent intent=new Intent(this,DeviceSettingActivity.class);
+    	
     	startActivity(intent);
     }
     @Override
