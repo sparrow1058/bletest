@@ -27,7 +27,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.preference.PreferenceActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -36,6 +38,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -45,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.example.bluetooth.le.R;
 
@@ -62,7 +67,14 @@ public class DeviceSettingActivity extends PreferenceActivity {
 	public static final String BLE_TAG="leaf ble";
 	public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
 	public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
+	private final String LIST_NAME = "NAME";
+	private final String LIST_UUID = "UUID";
+    private final String BAT_UUID="00002a19-0000-1000-8000-00805f9b34fb";
+    private final String ALERT_UUID="00002a06-0000-1000-8000-00805f9b34fb";
+    private final String TXPWR_UUID="00002a07-0000-1000-8000-00805f9b34fb";
+    private final int 	MSG_READ_RSSI=0;
+    private final int 	MSG_READ_BATTERY=1;
+    
 	private TextView mConnectionState;
 	private TextView mDataField;
 	private String mDeviceName;
@@ -73,19 +85,51 @@ public class DeviceSettingActivity extends PreferenceActivity {
 	private boolean mConnected = false;
 	private BluetoothGattCharacteristic mNotifyCharacteristic;
 
-	private final String LIST_NAME = "NAME";
-	private final String LIST_UUID = "UUID";
-    private final String BAT_UUID="00002a19-0000-1000-8000-00805f9b34fb";
-    private final String ALERT_UUID="00002a06-0000-1000-8000-00805f9b34fb";
-    private final String TXPWR_UUID="00002a07-0000-1000-8000-00805f9b34fb";
-	
+
 	public BluetoothGattService alertGattService;
 	public BluetoothGattService batteryGattService;
 	public BluetoothGattCharacteristic alertChar;
 	public BluetoothGattCharacteristic batteryChar;
 	private Switch find_switch=null;
     private Context mContext = null;
+  
+    public TextView bat_id;
+    public ImageView rssi_id;
 	// Code to manage Service lifecycle.
+    private final Timer timer = new Timer();
+        Handler handler = new Handler() {  
+        @Override  
+        public void handleMessage(Message msg) {  
+            // TODO Auto-generated method stub  
+            // 要做的事情  
+        	switch(msg.what)
+        	{
+        	case MSG_READ_RSSI:
+
+        		if(mBluetoothLeService!=null)
+        			mBluetoothLeService.readRemoteRssi();
+        		break;
+        	case MSG_READ_BATTERY:
+        	//	Log.i(BLE_TAG,"BATTERY="+mBluetoothLeService.remoteRssi);
+        		mBluetoothLeService.readCharacteristic(batteryChar);
+        		break;
+        	}
+//            super.handleMessage(msg);  
+        }  
+    }; 
+    TimerTask task = new TimerTask() {  
+        @Override  
+        public void run() {  
+            // TODO Auto-generated method stub
+        	Message tMsg=new Message(); 
+        	tMsg.what=0;
+            handler.sendMessage(tMsg);
+    		//if(mBluetoothLeService!=null)
+    		//	mBluetoothLeService.readRemoteRssi();
+        }  
+    };
+    //timer.schedule(task, 2000, 2000);
+    //timer.cancel(); 
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
 		@Override
@@ -120,6 +164,7 @@ public class DeviceSettingActivity extends PreferenceActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			final String action = intent.getAction();
+			int rssiValue = 0;
 			System.out.println("action = " + action);
 			if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
 				mConnected = true;
@@ -138,9 +183,12 @@ public class DeviceSettingActivity extends PreferenceActivity {
 				displayGattServices(mBluetoothLeService
 						.getSupportedGattServices());
 			} else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+				updateBatteryInfo(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 			//	displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 			}else if(BluetoothLeService.ACTION_READ_RSSI.equals(action)){
-				Log.v(BLE_TAG,"RSSI=" +mBluetoothLeService.remoteRssi);
+				//Log.v(BLE_TAG,"RSSI=" +intent.getStringExtra(BluetoothLeService.EXTRA_DATA)+ " "+bat_id);
+			//	bat_id.setText(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+				updateRssiView(Integer.parseInt(intent.getStringExtra(BluetoothLeService.EXTRA_DATA)));
 			}
 		}
 	};
@@ -210,13 +258,13 @@ public class DeviceSettingActivity extends PreferenceActivity {
 					characteristic.setValue(2, 17, 0);					
 					mBluetoothLeService.wirteCharacteristic(characteristic);
 					
-					mBluetoothLeService.readRemoteRssi(characteristic);
+
 					System.out.println("send a");
 				}
 				if (characteristic.getUuid().toString()
 						.equals("00002a19-0000-1000-8000-00805f9b34fb")) {
 					//characteristic.setValue("1".getBytes());
-					mBluetoothLeService.getRssiVal();
+//					mBluetoothLeService.getRssiVal();
 					mBluetoothLeService.readCharacteristic(characteristic);
 				}
 					//leaf  // write find me
@@ -271,10 +319,12 @@ public class DeviceSettingActivity extends PreferenceActivity {
 		// 从资源文件中添Preferences ，选择的值将会自动保存到SharePreferences
 		addPreferencesFromResource(R.layout.device_setting2);
 		mContext = this;
+		bat_id=(TextView)findViewById(R.id.bat_text);
+		rssi_id=(ImageView)findViewById(R.id.rssi_id);
 		find_switch=(Switch)findViewById(R.id.switch1);
+		
 		find_switch.setOnCheckedChangeListener(new OnCheckedChangeListener() {  
-			  
-	        @Override  
+ 	        @Override  
 	        public void onCheckedChanged(CompoundButton buttonView,  
 	                boolean isChecked) {  
 	            // TODO Auto-generated method stub  
@@ -311,8 +361,10 @@ public class DeviceSettingActivity extends PreferenceActivity {
 				BIND_AUTO_CREATE);
 		if (bll) {
 			System.out.println("---------------");
+    		timer.schedule(task, 5000, 5000);
 		} else {
 			System.out.println("===============");
+    		timer.schedule(task, 5000, 5000);
 		}
 	}
 
@@ -342,7 +394,6 @@ public class DeviceSettingActivity extends PreferenceActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.gatt_services, menu);
-		menu.findItem(R.id.menu_findme).setVisible(true);
 		if (mConnected) {
 			menu.findItem(R.id.menu_connect).setVisible(false);
 			menu.findItem(R.id.menu_disconnect).setVisible(true);
@@ -365,16 +416,26 @@ public class DeviceSettingActivity extends PreferenceActivity {
 		case android.R.id.home:
 			onBackPressed();
 			return true;
-		case R.id.menu_findme:
-			findMeFunction();
-			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void findMeFunction() {
-		// TODO 自动生成的方法存根
-		
+	public void updateBatteryInfo(String batInfo){
+		bat_id.setText(batInfo);
+	}
+	public void updateRssiView(int rssi){
+		if(rssi>-60)
+			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_5));
+		else if(rssi>-70)
+			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_4));
+		else if(rssi>-80)
+			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_3));
+		else if(rssi>-90)
+			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_2));
+		else if(rssi>-100)
+			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_1));
+		else if(rssi>-110)
+			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_0));
 	}
 /*
 	private void updateConnectionState(final int resourceId) {

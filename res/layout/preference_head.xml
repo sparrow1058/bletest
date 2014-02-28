@@ -12,14 +12,33 @@
             android:id="@+id/rssi_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.37"
-            android:src="@drawable/ic_launcher" />
+            android:layout_weight="0.53"
+            android:src="@drawable/signal_0" />
 
-        <ImageView
-            android:id="@+id/battery_id"
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_launcher" />
+            android:layout_height="match_parent"
+            android:layout_weight="0.31" >
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/battery_bg" />
+
+            <TextView
+                android:id="@+id/bat_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="100"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#3ab9ef"
+                android:textStyle="bold" />
+
+        </FrameLayout>
+
     </LinearLayout>
 
     <LinearLayout

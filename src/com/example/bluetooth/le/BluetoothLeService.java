@@ -61,6 +61,7 @@ public class BluetoothLeService extends Service {
 	public final static String ACTION_DATA_AVAILABLE = "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
 	public final static String ACTION_READ_RSSI="com.example.bluetooth.le.ACTION_READ_RSSI";
 	public final static String EXTRA_DATA = "com.example.bluetooth.le.EXTRA_DATA";
+	public final static String RSSI_VALUE="com.example.bluetooth.le.RSSI_VALUE";
 
 	public final static UUID UUID_HEART_RATE_MEASUREMENT = UUID
 			.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
@@ -131,8 +132,7 @@ public class BluetoothLeService extends Service {
 		public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
 			System.out.println("rssi = " + rssi);
 			if (status == BluetoothGatt.GATT_SUCCESS) {
-				remoteRssi=rssi;
-				broadcastUpdate(ACTION_READ_RSSI);
+				broadcastUpdate(ACTION_READ_RSSI,rssi);
 			} else {
 				Log.w(TAG, "onServicesDiscovered received: " + status);
 			}
@@ -149,7 +149,11 @@ public class BluetoothLeService extends Service {
 		final Intent intent = new Intent(action);
 		sendBroadcast(intent);
 	}
-
+	private void broadcastUpdate(final String action,int value) {
+		final Intent intent = new Intent(action);
+		intent.putExtra(EXTRA_DATA, String.valueOf(value));
+		sendBroadcast(intent);
+	}
 	private void broadcastUpdate(final String action,
 			final BluetoothGattCharacteristic characteristic) {
 		final Intent intent = new Intent(action);
@@ -324,7 +328,7 @@ public class BluetoothLeService extends Service {
 		mBluetoothGatt.writeCharacteristic(characteristic);
 
 	}
-	public void readRemoteRssi (BluetoothGattCharacteristic characteristic) {
+	public void readRemoteRssi () {
 
 		if (mBluetoothAdapter == null || mBluetoothGatt == null) {
 			Log.w(TAG, "BluetoothAdapter not initialized");

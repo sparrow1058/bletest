@@ -197,7 +197,7 @@ public class DeviceControlActivity extends Activity {
 					characteristic.setValue(2, 17, 0);					
 					mBluetoothLeService.wirteCharacteristic(characteristic);
 					
-					mBluetoothLeService.readRemoteRssi(characteristic);
+					mBluetoothLeService.readRemoteRssi();
 					System.out.println("send a");
 				}
 				if (characteristic.getUuid().toString()
@@ -304,7 +304,6 @@ public class DeviceControlActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.gatt_services, menu);
-		menu.findItem(R.id.menu_findme).setVisible(true);
 		if (mConnected) {
 			menu.findItem(R.id.menu_connect).setVisible(false);
 			menu.findItem(R.id.menu_disconnect).setVisible(true);
@@ -326,9 +325,6 @@ public class DeviceControlActivity extends Activity {
 			return true;
 		case android.R.id.home:
 			onBackPressed();
-			return true;
-		case R.id.menu_findme:
-			findMeFunction();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
