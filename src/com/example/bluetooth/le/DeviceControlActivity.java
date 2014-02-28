@@ -80,7 +80,7 @@ public class DeviceControlActivity extends Activity {
 			mBluetoothLeService = ((BluetoothLeService.LocalBinder) service)
 					.getService();
 			if (!mBluetoothLeService.initialize()) {
-				Log.e(TAG, "Unable to initialize Bluetooth");
+				Log.e(BLE_TAG, "Unable to initialize Bluetooth");
 				finish();
 			}
 			// Automatically connects to the device upon successful start-up
@@ -203,9 +203,8 @@ public class DeviceControlActivity extends Activity {
 				if (characteristic.getUuid().toString()
 						.equals("00002a19-0000-1000-8000-00805f9b34fb")) {
 					//characteristic.setValue("1".getBytes());
+					mBluetoothLeService.getRssiVal();
 					mBluetoothLeService.readCharacteristic(characteristic);
-					bb=characteristic.getValue();
-					Log.v("leaf","bat"+bb);
 				}
 					//leaf  // write find me
 				if (characteristic.getUuid().toString()
@@ -285,7 +284,7 @@ public class DeviceControlActivity extends Activity {
 		registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 		if (mBluetoothLeService != null) {
 			final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-			Log.d(TAG, "Connect request result=" + result);
+			Log.i(BLE_TAG, "Connect request result=" + result);
 		}
 	}
 

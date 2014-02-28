@@ -50,7 +50,7 @@ public class DeviceScanActivity extends ListActivity {
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
-
+    private boolean debugItem=true;
     private static final int REQUEST_ENABLE_BT = 1;
     // 10√Î∫ÛÕ£÷π≤È’“À—À˜.
     private static final long SCAN_PERIOD = 10000;
@@ -107,7 +107,12 @@ public class DeviceScanActivity extends ListActivity {
                 scanLeDevice(false);
                 break;
             case R.id.menu_set:
-            	showBleSetting();
+            
+            	if(debugItem)
+            		item.setTitle("debug");
+            	else
+            		item.setTitle("KeyFob");
+            	debugItem=!debugItem;
         }
         return true;
     }
@@ -146,25 +151,32 @@ public class DeviceScanActivity extends ListActivity {
         scanLeDevice(false);
         mLeDeviceListAdapter.clear();
     }
-    private void showBleSetting()
-    {
-//    	final BluetoothDevice device=mLeDeviceListAdapter.getDevice();
-    	final Intent intent=new Intent(this,DeviceSettingActivity.class);
-    	
-    	startActivity(intent);
-    }
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
-        final Intent intent = new Intent(this, DeviceControlActivity.class);
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
-        if (mScanning) {
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            mScanning = false;
+        if(debugItem){
+            final Intent intent = new Intent(this, DeviceControlActivity.class);
+            intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
+            intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+            if (mScanning) {
+                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mScanning = false;
+            }
+            startActivity(intent);
+        	
         }
-        startActivity(intent);
+        else{
+        	final Intent intent = new Intent(this, DeviceSettingActivity.class);
+            intent.putExtra(DeviceSettingActivity.EXTRAS_DEVICE_NAME, device.getName());
+            intent.putExtra(DeviceSettingActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+            if (mScanning) {
+                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mScanning = false;
+            }
+            startActivity(intent);
+        	
+        }
     }
 
     private void scanLeDevice(final boolean enable) {
