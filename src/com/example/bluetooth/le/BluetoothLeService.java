@@ -61,11 +61,11 @@ public class BluetoothLeService extends Service {
 	public final static String ACTION_DATA_AVAILABLE = "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
 	public final static String ACTION_READ_RSSI="com.example.bluetooth.le.ACTION_READ_RSSI";
 	public final static String EXTRA_DATA = "com.example.bluetooth.le.EXTRA_DATA";
-	public final static String RSSI_VALUE="com.example.bluetooth.le.RSSI_VALUE";
+	public final static String EXTRA_UUID="com.example.bluetooth.le.EXTRA_UUID";
 
 	public final static UUID UUID_HEART_RATE_MEASUREMENT = UUID
 			.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
-
+	public final static UUID UUID_BARTTERY_LEVEL=UUID.fromString(SampleGattAttributes.BATTERY_LEVEL);
 	// Implements callback methods for GATT events that the app cares about. For
 	// example,
 	// connection change and services discovered.
@@ -162,8 +162,13 @@ public class BluetoothLeService extends Service {
 		// parsing is
 		// carried out as per profile specifications:
 		// http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
+		int flag=characteristic.getProperties();
+		String extra_uuid=characteristic.getUuid().toString().substring(0,8);
+		Log.i("leaf ", "extra_uuid= "+extra_uuid);
+		intent.putExtra(EXTRA_UUID, extra_uuid);
+		Log.i("leaf ","properties= "+flag);
 		if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
-			int flag = characteristic.getProperties();
+	//		int flag = characteristic.getProperties();
 			int format = -1;
 			if ((flag & 0x01) != 0) {
 				format = BluetoothGattCharacteristic.FORMAT_UINT16;
@@ -175,8 +180,19 @@ public class BluetoothLeService extends Service {
 			final int heartRate = characteristic.getIntValue(format, 1);
 			System.out.println("Received heart rate: %d" + heartRate);
 			Log.d(TAG, String.format("Received heart rate: %d", heartRate));
+
 			intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
-		} else {
+		} 
+		/* 
+		 * else if(UUID_BARTTERY_LEVEL.equals(characteristic.getUuid())){
+		//		int flag=characteristic.getProperties();
+			//final int bat_level=characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 0);
+			final byte[] bat_level = characteristic.getValue();
+			Log.i("leaf ","bat_level= "+bat_level);
+			intent.putExtra(EXTRA_DATA, String.valueOf(bat_level));
+		}	
+		*/
+		else{
 			// For all other profiles, writes the data formatted in HEX.
 			final byte[] data = characteristic.getValue();
 			if (data != null && data.length > 0) {

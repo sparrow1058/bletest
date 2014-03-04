@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -39,6 +40,8 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -60,7 +63,7 @@ import com.example.bluetooth.le.R;
  * turn interacts with the Bluetooth LE API.
  */
 @SuppressLint("NewApi")
-public class DeviceSettingActivity extends PreferenceActivity {
+public class DeviceSettingActivity extends PreferenceActivity implements OnSeekBarChangeListener {
 	private final static String TAG = DeviceControlActivity.class
 			.getSimpleName();
 
@@ -69,7 +72,7 @@ public class DeviceSettingActivity extends PreferenceActivity {
 	public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 	private final String LIST_NAME = "NAME";
 	private final String LIST_UUID = "UUID";
-    private final String BAT_UUID="00002a19-0000-1000-8000-00805f9b34fb";
+    private final String BATTERY_UUID="00002a19-0000-1000-8000-00805f9b34fb";
     private final String ALERT_UUID="00002a06-0000-1000-8000-00805f9b34fb";
     private final String TXPWR_UUID="00002a07-0000-1000-8000-00805f9b34fb";
     private final int 	MSG_READ_RSSI=0;
@@ -92,16 +95,25 @@ public class DeviceSettingActivity extends PreferenceActivity {
 	public BluetoothGattCharacteristic batteryChar;
 	private Switch find_switch=null;
     private Context mContext = null;
+    //private 
+    private int saveLossRange;
+ //   private int saveAlertLevel;
+   // private int saveAlertTime;
+    
   
     public TextView bat_id;
     public ImageView rssi_id;
+    public SeekBar lossBar_id;
+    public TextView lossText_id;
 	// Code to manage Service lifecycle.
     private final Timer timer = new Timer();
+    private final Timer bat_timer=new Timer();
         Handler handler = new Handler() {  
         @Override  
         public void handleMessage(Message msg) {  
             // TODO Auto-generated method stub  
             // 要做的事情  
+        	Log.i(BLE_TAG,"msg.what= "+msg.what);
         	switch(msg.what)
         	{
         	case MSG_READ_RSSI:
@@ -122,12 +134,26 @@ public class DeviceSettingActivity extends PreferenceActivity {
         public void run() {  
             // TODO Auto-generated method stub
         	Message tMsg=new Message(); 
-        	tMsg.what=0;
+        	tMsg.what=MSG_READ_RSSI;
             handler.sendMessage(tMsg);
     		//if(mBluetoothLeService!=null)
     		//	mBluetoothLeService.readRemoteRssi();
         }  
     };
+    TimerTask bat_task = new TimerTask() {  
+        @Override  
+        public void run() {  
+            // TODO Auto-generated method stub
+        //	Message tMsg=new Message(); 
+        	//tMsg.what=MSG_READ_BATTERY;
+            //handler.sendMessage(tMsg);
+        	Log.i(BLE_TAG," read battery level");
+            if(mBluetoothLeService!=null)
+            	mBluetoothLeService.readCharacteristic(batteryChar);
+            //if(mBluetoothLeService!=null)
+    		//	mBluetoothLeService.readRemoteRssi();
+        }  
+    }; 
     //timer.schedule(task, 2000, 2000);
     //timer.cancel(); 
 	private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -164,6 +190,7 @@ public class DeviceSettingActivity extends PreferenceActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			final String action = intent.getAction();
+			String extra_uuid="";
 			int rssiValue = 0;
 			System.out.println("action = " + action);
 			if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
@@ -183,7 +210,10 @@ public class DeviceSettingActivity extends PreferenceActivity {
 				displayGattServices(mBluetoothLeService
 						.getSupportedGattServices());
 			} else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-				updateBatteryInfo(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+				extra_uuid=intent.getStringExtra(BluetoothLeService.EXTRA_UUID);
+				Log.v(BLE_TAG,"extra uuid= "+extra_uuid);
+				if (extra_uuid.equals("00002a19"))
+					updateBatteryInfo(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 			//	displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 			}else if(BluetoothLeService.ACTION_READ_RSSI.equals(action)){
 				//Log.v(BLE_TAG,"RSSI=" +intent.getStringExtra(BluetoothLeService.EXTRA_DATA)+ " "+bat_id);
@@ -322,7 +352,9 @@ public class DeviceSettingActivity extends PreferenceActivity {
 		bat_id=(TextView)findViewById(R.id.bat_text);
 		rssi_id=(ImageView)findViewById(R.id.rssi_id);
 		find_switch=(Switch)findViewById(R.id.switch1);
-		
+		lossBar_id=(SeekBar)findViewById(R.id.lossBar);
+		lossText_id=(TextView)findViewById(R.id.lossText);
+		lossBar_id.setOnSeekBarChangeListener(this);
 		find_switch.setOnCheckedChangeListener(new OnCheckedChangeListener() {  
  	        @Override  
 	        public void onCheckedChanged(CompoundButton buttonView,  
@@ -343,6 +375,10 @@ public class DeviceSettingActivity extends PreferenceActivity {
 	            }  
 	        }  
 	    });	
+		SharedPreferences bleSettings=getPreferences(Activity.MODE_PRIVATE);
+		saveLossRange=bleSettings.getInt("LossRange", 2);
+		Log.i(BLE_TAG,"Create loss range= "+saveLossRange);
+		lossBar_id.setProgress(saveLossRange);
 		final Intent intent = getIntent();
 		mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
 		mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
@@ -361,16 +397,36 @@ public class DeviceSettingActivity extends PreferenceActivity {
 				BIND_AUTO_CREATE);
 		if (bll) {
 			System.out.println("---------------");
-    		timer.schedule(task, 5000, 5000);
+			bat_timer.schedule(bat_task, 8000,100000);
+    		timer.schedule(task, 5000, 50000);
 		} else {
 			System.out.println("===============");
     		timer.schedule(task, 5000, 5000);
 		}
 	}
-
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch)
+	{
+		lossText_id.setText((progress+1)+" M");
+	}
+	//停止拖动
+	public void onStopTrackingTouch(SeekBar seekBar)
+	{
+		int progress=lossBar_id.getProgress();
+		lossText_id.setText((progress+1)+" M");
+		SharedPreferences barState=getPreferences(0);
+		SharedPreferences.Editor batEditor=barState.edit();
+		batEditor.putInt("LossRange", progress);
+		batEditor.commit();
+	}
 	@Override
 	protected void onResume() {
 		super.onResume();
+		SharedPreferences bleSettings=getPreferences(Activity.MODE_PRIVATE);
+		saveLossRange=bleSettings.getInt("LossRange", 1);
+		Log.i(BLE_TAG,"resume loss range= "+saveLossRange);
+		
+		lossBar_id.setProgress(saveLossRange);
+		
 		registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 		if (mBluetoothLeService != null) {
 			final boolean result = mBluetoothLeService.connect(mDeviceAddress);
@@ -494,7 +550,7 @@ public class DeviceSettingActivity extends PreferenceActivity {
 					alertChar=gattCharacteristic;
 					//Log.i(BLE_TAG,"leaf alertChar= "+alertChar);
 				}
-				if(uuid.equals(BAT_UUID)){
+				if(uuid.equals(BATTERY_UUID)){
 					batteryChar=gattCharacteristic;
 				//	Log.i(BLE_TAG,"leaf batteryChar= "+batteryChar);
 				}
@@ -515,5 +571,10 @@ public class DeviceSettingActivity extends PreferenceActivity {
 		intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
 		intentFilter.addAction(BluetoothLeService.ACTION_READ_RSSI);
 		return intentFilter;
+	}
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+		// TODO 自动生成的方法存根
+		
 	}
 }

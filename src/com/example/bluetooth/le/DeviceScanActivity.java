@@ -82,7 +82,7 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-        	menu.findItem(R.id.menu_set);
+
         if (!mScanning) {
             menu.findItem(R.id.menu_stop).setVisible(false);
             menu.findItem(R.id.menu_scan).setVisible(true);
@@ -106,13 +106,7 @@ public class DeviceScanActivity extends ListActivity {
             case R.id.menu_stop:
                 scanLeDevice(false);
                 break;
-            case R.id.menu_set:
-            
-            	if(debugItem)
-            		item.setTitle("debug");
-            	else
-            		item.setTitle("KeyFob");
-            	debugItem=!debugItem;
+
         }
         return true;
     }
@@ -155,7 +149,7 @@ public class DeviceScanActivity extends ListActivity {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
-        if(debugItem){
+        /* if(false){
             final Intent intent = new Intent(this, DeviceControlActivity.class);
             intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
             intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
@@ -166,7 +160,8 @@ public class DeviceScanActivity extends ListActivity {
             startActivity(intent);
         	
         }
-        else{
+        else
+       */ {
         	final Intent intent = new Intent(this, DeviceSettingActivity.class);
             intent.putExtra(DeviceSettingActivity.EXTRAS_DEVICE_NAME, device.getName());
             intent.putExtra(DeviceSettingActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
