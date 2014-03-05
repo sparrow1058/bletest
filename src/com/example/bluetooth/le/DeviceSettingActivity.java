@@ -22,16 +22,22 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceActivity;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,6 +62,7 @@ import java.util.TimerTask;
 
 import com.example.bluetooth.le.R;
 
+
 /**
  * For a given BLE device, this Activity provides the user interface to connect,
  * display data, and display GATT services and characteristics supported by the
@@ -77,6 +84,7 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
     private final String TXPWR_UUID="00002a07-0000-1000-8000-00805f9b34fb";
     private final int 	MSG_READ_RSSI=0;
     private final int 	MSG_READ_BATTERY=1;
+    private     TelephonyManager manager ;  
     
 	private TextView mConnectionState;
 	private TextView mDataField;
@@ -403,6 +411,16 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 			System.out.println("===============");
     		timer.schedule(task, 5000, 5000);
 		}
+	//监听 电话，短信消息	
+        SmsContent content = new SmsContent(new Handler());  
+        //注册短信变化监听  
+        this.getContentResolver().registerContentObserver(Uri.parse("content://sms/"), true, content); 
+        //获取电话服务  
+        manager = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);  
+        // 手动注册对PhoneStateListener中的listen_call_state状态进行监听  
+        manager.listen(new MyPhoneStateListener(), PhoneStateListener.LISTEN_CALL_STATE);  
+     //   
+        
 	}
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch)
 	{
@@ -577,4 +595,51 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 		// TODO 自动生成的方法存根
 		
 	}
+    class MyPhoneStateListener extends PhoneStateListener{  
+    	  
+        @Override  
+        public void onCallStateChanged(int state, String incomingNumber) {  
+        	switch (state) {  
+            case TelephonyManager.CALL_STATE_IDLE:  
+ 
+                Log.i("leaf ","phone idle ");
+                break;  
+            case TelephonyManager.CALL_STATE_RINGING:  
+                Log.i("leaf ","phone incoming call "+incomingNumber);
+                break;  
+            case TelephonyManager.CALL_STATE_OFFHOOK:  
+                Log.i("leaf ","Phone is handup");
+            default:  
+                break;  
+            }  
+            super.onCallStateChanged(state, incomingNumber);  
+        }  
+          
+    } 
+    class SmsContent extends ContentObserver{  
+        private Cursor cursor = null;  
+        public SmsContent(Handler handler) {
+			// TODO 自动生成的构造函数存根
+        	super(handler); 
+        }
+	    public void onChange(boolean selfChange) {  
+            // TODO Auto-generated method stub  
+            super.onChange(selfChange);  
+          Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null,
+        		  "read=?",  new String[]{"0"}, null);
+           if (cursor != null){  
+                while (cursor.moveToNext()){
+             	   StringBuilder sb = new StringBuilder();
+             	   //_id为短信编号；address为手机号码；body为短信内容；time为时间，长整型的
+             	   sb.append("_id=").append(cursor.getInt(cursor.getColumnIndex("_id")));
+                   sb.append(",address=").append(cursor.getString(cursor.getColumnIndex("address")));
+                   sb.append(";body=").append(cursor.getString(cursor.getColumnIndex("body")));
+                   sb.append(";time=").append(cursor.getLong(cursor.getColumnIndex("date")));
+                   Log.i("ReceiveSendSMS", sb.toString()); 
+
+                } 
+            } 
+        }  
+    }  
+
 }
