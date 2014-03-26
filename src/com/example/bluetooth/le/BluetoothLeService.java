@@ -199,7 +199,7 @@ public class BluetoothLeService extends Service {
 				final StringBuilder stringBuilder = new StringBuilder(
 						data.length);
 				for (byte byteChar : data)
-					stringBuilder.append(String.format("%02X ", byteChar));
+					stringBuilder.append(String.format("%d ", byteChar));
 
 				System.out.println("ppp" + new String(data) + "\n"
 						+ stringBuilder.toString());

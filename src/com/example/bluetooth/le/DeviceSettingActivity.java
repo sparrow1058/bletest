@@ -30,12 +30,20 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -70,7 +78,7 @@ import com.example.bluetooth.le.R;
  * turn interacts with the Bluetooth LE API.
  */
 @SuppressLint("NewApi")
-public class DeviceSettingActivity extends PreferenceActivity implements OnSeekBarChangeListener {
+public class DeviceSettingActivity extends PreferenceActivity implements OnSeekBarChangeListener, OnPreferenceChangeListener {
 	private final static String TAG = DeviceControlActivity.class
 			.getSimpleName();
 
@@ -82,10 +90,21 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
     private final String BATTERY_UUID="00002a19-0000-1000-8000-00805f9b34fb";
     private final String ALERT_UUID="00002a06-0000-1000-8000-00805f9b34fb";
     private final String TXPWR_UUID="00002a07-0000-1000-8000-00805f9b34fb";
+    
+
+    private final String lossFlagKey="loss_check";
+    private final String shakeFlagKey="shake_check";
+    private final String phoneAlertKey="phone_check";
+    private final String msgAlertKey="msg_check";
+    private final String alertLevelKey="alert_list";
+    private final String responseTimeKey="time_list";
+    
     private final int 	MSG_READ_RSSI=0;
     private final int 	MSG_READ_BATTERY=1;
-    private     TelephonyManager manager ;  
     
+    private     TelephonyManager manager ;  
+	private SoundPool sp;	//define a soundpool
+	private int s_dog,s_monk,s_duck,s_cat;	//set sournd id
 	private TextView mConnectionState;
 	private TextView mDataField;
 	private String mDeviceName;
@@ -105,14 +124,26 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
     private Context mContext = null;
     //private 
     private int saveLossRange;
- //   private int saveAlertLevel;
-   // private int saveAlertTime;
-    
+    private String alertLevelValue;
+    private String responseTimeValue;
+    private boolean lossFlag;
+    private boolean shakeFlag;
+    private boolean phoneFlag;
+    private boolean msgFlag;
   
-    public TextView bat_id;
+    public ImageView bat_id;
     public ImageView rssi_id;
     public SeekBar lossBar_id;
     public TextView lossText_id;
+    private CheckBoxPreference  lossFlagCheckBox;
+    private CheckBoxPreference  shakeFlagCheckBox;
+    private CheckBoxPreference  phoneAlertCheckBox;
+    private CheckBoxPreference  msgAlertCheckBox;
+    private ListPreference	alertLevelList;
+    private ListPreference	responseTimeList;
+    
+    public SharedPreferences bleSettings;
+    
 	// Code to manage Service lifecycle.
     private final Timer timer = new Timer();
     private final Timer bat_timer=new Timer();
@@ -182,6 +213,7 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 
 		@Override
 		public void onServiceDisconnected(ComponentName componentName) {
+
 			mBluetoothLeService = null;
 		}
 	};
@@ -210,6 +242,9 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 				mConnected = false;
 			//	updateConnectionState(R.string.disconnected);
 				invalidateOptionsMenu();
+				updateBatteryInfo(0);
+				updateRssiView(-1000);
+
 			//	clearUI();
 			} else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED
 					.equals(action)) {
@@ -221,8 +256,14 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 				extra_uuid=intent.getStringExtra(BluetoothLeService.EXTRA_UUID);
 				Log.v(BLE_TAG,"extra uuid= "+extra_uuid);
 				if (extra_uuid.equals("00002a19"))
-					updateBatteryInfo(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-			//	displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+				{
+					String batLevel=intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+					Log.i("leaf battery ","level="+batLevel);
+					updateBatteryInfo(20);	
+					//updateBatteryInfo(batLevel);
+				//	updateBatteryInfo(Integer.parseInt(intent.getStringExtra(BluetoothLeService.EXTRA_DATA)));
+				}	
+					//	displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
 			}else if(BluetoothLeService.ACTION_READ_RSSI.equals(action)){
 				//Log.v(BLE_TAG,"RSSI=" +intent.getStringExtra(BluetoothLeService.EXTRA_DATA)+ " "+bat_id);
 			//	bat_id.setText(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
@@ -230,125 +271,51 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 			}
 		}
 	};
-
-	// If a given GATT characteristic is selected, check for supported features.
-	// This sample
-	// demonstrates 'Read' and 'Notify' features. See
-	// http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for
-	// the complete
-	// list of supported characteristic features.
-	private final ExpandableListView.OnChildClickListener servicesListClickListner = new ExpandableListView.OnChildClickListener() {
-		@Override
-		public boolean onChildClick(ExpandableListView parent, View v,
-				int groupPosition, int childPosition, long id) {
-			byte[] bb=new byte[1];
-			
-			if (mGattCharacteristics != null) {
-				final BluetoothGattCharacteristic characteristic = mGattCharacteristics
-						.get(groupPosition).get(childPosition);
-				final int charaProp = characteristic.getProperties();
-				System.out.println("charaProp = " + charaProp + ",UUID = "
-						+ characteristic.getUuid().toString());
-				Random r = new Random();
-
-				if (characteristic.getUuid().toString()
-						.equals("0000fff2-0000-1000-8000-00805f9b34fb")) {
-						int time= 0;
-						while((time=r.nextInt(9))<=0){
-							
-						}
-						
-						String data = time+","+"1,,,,,";
-						characteristic.setValue(data.getBytes());
-						mBluetoothLeService.wirteCharacteristic(characteristic);
-				}				
-				if (characteristic.getUuid().toString()
-						.equals("0000fff1-0000-1000-8000-00805f9b34fb")) {
-					int R = r.nextInt(255);
-					int G = r.nextInt(255);
-					int B = r.nextInt(255);
-					int BB = r.nextInt(100);
-					String data = R + "," + G + "," + B + "," + BB;
-					while (data.length() < 18) {
-						data += ",";
-					}
-					System.out.println(data);
-					characteristic.setValue(data.getBytes());
-					mBluetoothLeService.wirteCharacteristic(characteristic);
-				}
-				if (characteristic.getUuid().toString()
-						.equals("0000fff3-0000-1000-8000-00805f9b34fb")) {
-					int R = r.nextInt(255);
-					int G = r.nextInt(255);
-					int B = r.nextInt(255);
-					int BB = r.nextInt(100);
-					String data = R + "," + G + "," + B + "," + BB;
-					while (data.length() < 18) {
-						data += ",";
-					}
-					System.out.println("RT");
-					characteristic.setValue("RT".getBytes());
-					mBluetoothLeService.wirteCharacteristic(characteristic);
-				}
-				if (characteristic.getUuid().toString()
-						.equals("00002a06-0000-1000-8000-00805f9b34fb")) {
-					bb[0]=0;
-					characteristic.setValue(2, 17, 0);					
-					mBluetoothLeService.wirteCharacteristic(characteristic);
-					
-
-					System.out.println("send a");
-				}
-				if (characteristic.getUuid().toString()
-						.equals("00002a19-0000-1000-8000-00805f9b34fb")) {
-					//characteristic.setValue("1".getBytes());
-//					mBluetoothLeService.getRssiVal();
-					mBluetoothLeService.readCharacteristic(characteristic);
-				}
-					//leaf  // write find me
-				if (characteristic.getUuid().toString()
-						.equals("0000fff5-0000-1000-8000-00805f9b34fb")) {
-					characteristic.setValue("S".getBytes());
-					mBluetoothLeService.wirteCharacteristic(characteristic);
-					System.out.println("send S");
-				} else {
-
-					if ((charaProp & BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-						// If there is an active notification on a
-						// characteristic, clear
-						// it first so it doesn't update the data field on the
-						// user interface.
-						if (mNotifyCharacteristic != null) {
-							mBluetoothLeService.setCharacteristicNotification(
-									mNotifyCharacteristic, false);
-							mNotifyCharacteristic = null;
-						}
-						mBluetoothLeService.readCharacteristic(characteristic);
-
-					}
-				}
-				if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-
-					if (characteristic.getUuid().toString().equals("0000fff6-0000-1000-8000-00805f9b34fb")||characteristic.getUuid().toString().equals("0000fff4-0000-1000-8000-00805f9b34fb")) {
-						System.out.println("enable notification");
-						mNotifyCharacteristic = characteristic;
-						mBluetoothLeService.setCharacteristicNotification(
-								characteristic, true);
-						
-					}
-				}
-
-				return true;
-			}
-			return false;
-		}
-	};
-/*
 	private void clearUI() {
-		mGattServicesList.setAdapter((SimpleExpandableListAdapter) null);
-		mDataField.setText(R.string.no_data);
+
 	}
-*/
+	@SuppressWarnings("deprecation")
+	private void createPreferenceUI(){
+	    
+	    lossFlagCheckBox=(CheckBoxPreference)findPreference(lossFlagKey);
+	    shakeFlagCheckBox=(CheckBoxPreference)findPreference(shakeFlagKey);
+	    phoneAlertCheckBox=(CheckBoxPreference)findPreference(phoneAlertKey);
+	    msgAlertCheckBox=(CheckBoxPreference)findPreference(msgAlertKey);
+	    alertLevelList=(ListPreference)findPreference(alertLevelKey);
+	    responseTimeList=(ListPreference)findPreference(responseTimeKey);
+        //为各个Preference注册监听接口  
+	    lossFlagCheckBox.setOnPreferenceChangeListener(this);  
+	    shakeFlagCheckBox.setOnPreferenceChangeListener(this);  
+	    phoneAlertCheckBox.setOnPreferenceChangeListener(this);  
+	    msgAlertCheckBox.setOnPreferenceChangeListener(this);  
+	    alertLevelList.setOnPreferenceChangeListener(this);  
+	    responseTimeList.setOnPreferenceChangeListener(this); 
+	//	bleSettings=getPreferences(Activity.MODE_PRIVATE);
+	    bleSettings=PreferenceManager.getDefaultSharedPreferences(this); 
+		saveLossRange=bleSettings.getInt("LossRange", 2);
+		alertLevelValue=bleSettings.getString(alertLevelKey, "mid");
+		responseTimeValue=bleSettings.getString(responseTimeKey, "50ms");
+		lossFlag=bleSettings.getBoolean(lossFlagKey, true);
+		shakeFlag=bleSettings.getBoolean(shakeFlagKey, true);
+		phoneFlag=bleSettings.getBoolean(phoneAlertKey, false);
+		msgFlag=bleSettings.getBoolean(msgAlertKey, false);
+		Log.i(BLE_TAG,"all state ="+ saveLossRange+ " "+ alertLevelValue+ " "+responseTimeValue+ " "+lossFlag+ " "+shakeFlag+ " "+phoneFlag+ " ");
+		
+		lossBar_id.setProgress(saveLossRange);
+		
+		
+	}
+	public void alertSet(int level)
+	{
+		if(alertChar!=null){
+			alertChar.setValue(level, 17, 0);
+			mBluetoothLeService.wirteCharacteristic(alertChar);
+		}
+	}
+	public void midAlert()
+	{
+		sp.play(s_dog, 1, 1, 0, 0, 1);
+	}
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -357,36 +324,33 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 		// 从资源文件中添Preferences ，选择的值将会自动保存到SharePreferences
 		addPreferencesFromResource(R.layout.device_setting2);
 		mContext = this;
-		bat_id=(TextView)findViewById(R.id.bat_text);
+		bat_id=(ImageView)findViewById(R.id.battery_id);
 		rssi_id=(ImageView)findViewById(R.id.rssi_id);
 		find_switch=(Switch)findViewById(R.id.switch1);
 		lossBar_id=(SeekBar)findViewById(R.id.lossBar);
 		lossText_id=(TextView)findViewById(R.id.lossText);
 		lossBar_id.setOnSeekBarChangeListener(this);
+        sp=new SoundPool(10,AudioManager.STREAM_SYSTEM,1);
+        s_dog=sp.load(this,R.raw.dog,1);
 		find_switch.setOnCheckedChangeListener(new OnCheckedChangeListener() {  
  	        @Override  
 	        public void onCheckedChanged(CompoundButton buttonView,  
 	                boolean isChecked) {  
 	            // TODO Auto-generated method stub  
 	            if (isChecked) {
-	            	if(alertChar!=null){
-	            		alertChar.setValue(2, 17, 0);					
-					mBluetoothLeService.wirteCharacteristic(alertChar);
-	            	}
+	            	alertSet(2);
+
+	            	
 	            	//Toast.makeText(mContext, "Find ", Toast.LENGTH_LONG).show();
 	            } else {  
-	            	if(alertChar!=null){
-	            		alertChar.setValue(0, 17, 0);					
-					mBluetoothLeService.wirteCharacteristic(alertChar);
-	            	}
+	            	alertSet(0);
+	            	
 	            //	Toast.makeText(mContext, "Not Find", Toast.LENGTH_LONG).show();
 	            }  
 	        }  
 	    });	
-		SharedPreferences bleSettings=getPreferences(Activity.MODE_PRIVATE);
-		saveLossRange=bleSettings.getInt("LossRange", 2);
-		Log.i(BLE_TAG,"Create loss range= "+saveLossRange);
-		lossBar_id.setProgress(saveLossRange);
+		createPreferenceUI();
+
 		final Intent intent = getIntent();
 		mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
 		mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
@@ -431,7 +395,9 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 	{
 		int progress=lossBar_id.getProgress();
 		lossText_id.setText((progress+1)+" M");
-		SharedPreferences barState=getPreferences(0);
+		//SharedPreferences barState=getPreferences(0);
+		saveLossRange=progress+1;
+		SharedPreferences barState=PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor batEditor=barState.edit();
 		batEditor.putInt("LossRange", progress);
 		batEditor.commit();
@@ -439,7 +405,7 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 	@Override
 	protected void onResume() {
 		super.onResume();
-		SharedPreferences bleSettings=getPreferences(Activity.MODE_PRIVATE);
+//		SharedPreferences bleSettings=getPreferences(Activity.MODE_PRIVATE);
 		saveLossRange=bleSettings.getInt("LossRange", 1);
 		Log.i(BLE_TAG,"resume loss range= "+saveLossRange);
 		
@@ -494,8 +460,17 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 		return super.onOptionsItemSelected(item);
 	}
 
-	public void updateBatteryInfo(String batInfo){
-		bat_id.setText(batInfo);
+	public void updateBatteryInfo(int  batCapcity){
+		if(batCapcity==0)
+			bat_id.setImageDrawable(getResources().getDrawable(R.drawable.battery_bg));
+		else if(batCapcity<20)
+			bat_id.setImageDrawable(getResources().getDrawable(R.drawable.battery_bg2));
+		else if(batCapcity<50)
+			bat_id.setImageDrawable(getResources().getDrawable(R.drawable.battery_bg3));
+		else if(batCapcity<80)	
+			bat_id.setImageDrawable(getResources().getDrawable(R.drawable.battery_bg4));
+		else if(batCapcity<98)	
+			bat_id.setImageDrawable(getResources().getDrawable(R.drawable.battery_full));
 	}
 	public void updateRssiView(int rssi){
 		if(rssi>-60)
@@ -508,8 +483,15 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_2));
 		else if(rssi>-100)
 			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_1));
-		else if(rssi>-110)
+		else
 			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_0));
+		rssi=Math.abs(rssi);
+		if(rssi>(saveLossRange*3))
+		{
+			midAlert();
+		}
+		
+			
 	}
 /*
 	private void updateConnectionState(final int resourceId) {
@@ -599,19 +581,24 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
     	  
         @Override  
         public void onCallStateChanged(int state, String incomingNumber) {  
+        	int phoneAlert=0;
         	switch (state) {  
             case TelephonyManager.CALL_STATE_IDLE:  
- 
+            	phoneAlert=0;
                 Log.i("leaf ","phone idle ");
                 break;  
-            case TelephonyManager.CALL_STATE_RINGING:  
+            case TelephonyManager.CALL_STATE_RINGING:
+            	phoneAlert=2;
                 Log.i("leaf ","phone incoming call "+incomingNumber);
                 break;  
-            case TelephonyManager.CALL_STATE_OFFHOOK:  
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+            	phoneAlert=0;
                 Log.i("leaf ","Phone is handup");
             default:  
                 break;  
-            }  
+            }
+        	if(phoneFlag==true)
+        		alertSet(phoneAlert);
             super.onCallStateChanged(state, incomingNumber);  
         }  
           
@@ -627,7 +614,16 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
             super.onChange(selfChange);  
           Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null,
         		  "read=?",  new String[]{"0"}, null);
-           if (cursor != null){  
+         if(msgFlag==true){
+          if (cursor != null){ 
+        	   alertSet(2);
+        	   new Handler().postDelayed(new Runnable(){    
+        		    public void run() {    
+        		    //execute the task    
+       		    	 alertSet(0);
+        		    }    
+        		 }, 15000);
+        	  /* 
                 while (cursor.moveToNext()){
              	   StringBuilder sb = new StringBuilder();
              	   //_id为短信编号；address为手机号码；body为短信内容；time为时间，长整型的
@@ -637,9 +633,51 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
                    sb.append(";time=").append(cursor.getLong(cursor.getColumnIndex("date")));
                    Log.i("ReceiveSendSMS", sb.toString()); 
 
-                } 
+                }
+               */  
             } 
+        }  }
+	    
+    }
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		// TODO 自动生成的方法存根
+	       //判断是哪个Preference改变了  
+        if(preference.getKey().equals(lossFlagKey))  
+        {  
+        	lossFlag=(Boolean)newValue;
+            Log.v("SystemSetting", "lossFlagKey is changed");  
         }  
-    }  
+        else if(preference.getKey().equals(shakeFlagKey))  
+        {  
+            shakeFlag=(Boolean)newValue;
+        	Log.v("SystemSetting", "shakeFlagKey is changed");  
+        }
+        else if(preference.getKey().equals(phoneAlertKey))  
+        { 
+        	phoneFlag=(Boolean)newValue;
+            Log.v("SystemSetting", "phoneAlertKey is changed");  
+        }
+        else if(preference.getKey().equals(msgAlertKey))  
+        {  
+        	msgFlag=(Boolean)newValue;
+            Log.v("SystemSetting", "msgAlertKey is changed");  
+        }
+        else if(preference.getKey().equals(responseTimeKey))  
+        {  
+        	responseTimeValue=String.valueOf(newValue);
+            Log.v("SystemSetting", "responseTimeKeyis changed");  
+        }
+        else if(preference.getKey().equals(alertLevelKey))  
+        {  
+        	alertLevelValue=String.valueOf(newValue);
+        	Log.v("SystemSetting", "alertLevelKey is changed");  
+        }
+        else
+        	return false;
+	
+		return true;
+	}
+ 
 
 }
