@@ -58,6 +58,8 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.smart_setting);
         getActionBar().setTitle(R.string.title_devices);
         mHandler = new Handler();
 
@@ -104,7 +106,8 @@ public class DeviceScanActivity extends ListActivity {
                 scanLeDevice(true);
                 break;
             case R.id.menu_stop:
-                scanLeDevice(false);
+          		startUI();
+            	scanLeDevice(false);
                 break;
 
         }
@@ -161,8 +164,9 @@ public class DeviceScanActivity extends ListActivity {
         	
         }
         else
-       */ {
-        	final Intent intent = new Intent(this, DeviceSettingActivity.class);
+       */
+        {
+        	final Intent intent = new Intent(this, SmartMainActivity.class);
             intent.putExtra(DeviceSettingActivity.EXTRAS_DEVICE_NAME, device.getName());
             intent.putExtra(DeviceSettingActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
             if (mScanning) {
@@ -174,6 +178,15 @@ public class DeviceScanActivity extends ListActivity {
         }
     }
 
+    private void startUI()
+    {
+       	final Intent intent = new Intent(this, SmartMainActivity.class);
+        if (mScanning) {
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mScanning = false;
+        }
+        startActivity(intent);
+    }
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             // Stops scanning after a pre-defined scan period.

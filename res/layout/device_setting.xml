@@ -4,40 +4,105 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/find_me" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
-    <Switch
-        android:id="@+id/call_id"
-        android:layout_width="400dp"
-        android:layout_height="50dp"
-        android:text="@string/call_alert" />
+        <ImageView
+            android:id="@+id/battery_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_weight="1"
+            android:src="@drawable/signal_0" />
 
-    <Switch
-        android:id="@+id/msg_id"
-        android:layout_width="400dp"
-        android:layout_height="50dp"
-        android:text="@string/msg_alert" />
+        
 
-    <Switch
-        android:id="@+id/loss_id"
-        android:layout_width="400dp"
-        android:layout_height="50dp"
-        android:text="@string/loss_alert" />
+        <ImageView
+            android:id="@+id/rssi_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/battery_bg" />
 
-    <Switch
-        android:id="@+id/loss_range_id"
-        android:layout_width="400dp"
-        android:layout_height="50dp"
-        android:text="@string/loss_range" />
+    </LinearLayout>
 
-    <Switch
-        android:id="@+id/warning_level_id"
-        android:layout_width="400dp"
-        android:layout_height="50dp"
-        android:text="@string/warning_level" />
+     <TextView
+         android:id="@+id/lossText_id"
+         android:layout_width="match_parent"
+         android:layout_height="53dp"
+         android:minHeight="30dp" />
 
+     <Space
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content" />
+
+    <ImageButton
+        android:id="@+id/findme_btn"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_gravity="center"
+        android:background="@drawable/smart_gay"
+        android:scaleType="fitXY" />
+
+
+
+    <TextView
+        android:id="@+id/loss_view"
+        android:layout_width="match_parent"
+        android:layout_height="53dp"
+        android:minHeight="30dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.52"
+            android:text="@string/loss_range" />
+
+
+
+    </LinearLayout>
+	<TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+        	android:layout_height="53dp"
+       	 android:minHeight="30dp" /> 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp" >
+
+        
+
+        <ImageButton
+            android:id="@+id/btn_connect"
+        android:layout_width="116dp"
+        android:layout_height="47dp"
+            android:layout_weight="0.27"
+             android:background="@drawable/bt_gay"
+            android:scaleType="fitXY"
+				 />
+
+        <ImageButton
+            android:id="@+id/btn_setting"
+        android:layout_width="116dp"
+        android:layout_height="47dp"
+            android:layout_weight="0.27"
+            android:background="@drawable/bt_gay"
+            android:scaleType="fitXY" />
+
+    </LinearLayout>
+
+    
+<LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical" >
+        </LinearLayout>
 </LinearLayout>

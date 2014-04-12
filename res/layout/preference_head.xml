@@ -12,8 +12,17 @@
             android:id="@+id/rssi_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
             android:layout_weight="0.53"
             android:src="@drawable/signal_0" />
+
+        <TextView
+            android:id="@+id/rssi_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.52"
+            android:text="view" />
+
         <ImageView
             android:id="@+id/battery_id"
             android:layout_width="wrap_content"

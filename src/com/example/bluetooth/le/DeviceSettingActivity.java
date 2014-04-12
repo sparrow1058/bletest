@@ -50,6 +50,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListView;
@@ -78,7 +79,7 @@ import com.example.bluetooth.le.R;
  * turn interacts with the Bluetooth LE API.
  */
 @SuppressLint("NewApi")
-public class DeviceSettingActivity extends PreferenceActivity implements OnSeekBarChangeListener, OnPreferenceChangeListener {
+public class DeviceSettingActivity extends PreferenceActivity implements OnSeekBarChangeListener, OnPreferenceChangeListener, OnClickListener {
 	private final static String TAG = DeviceControlActivity.class
 			.getSimpleName();
 
@@ -131,8 +132,10 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
     private boolean phoneFlag;
     private boolean msgFlag;
   
+    private int rssi_count;
     public ImageView bat_id;
-    public ImageView rssi_id;
+    public TextView rssi_view;
+        public ImageView rssi_id;
     public SeekBar lossBar_id;
     public TextView lossText_id;
     private CheckBoxPreference  lossFlagCheckBox;
@@ -312,9 +315,12 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 			mBluetoothLeService.wirteCharacteristic(alertChar);
 		}
 	}
-	public void midAlert()
+	public void midAlert(boolean on)
 	{
-		sp.play(s_dog, 1, 1, 0, 0, 1);
+		if(on)
+			s_dog=sp.play(s_dog, 1, 1, 0, 20, 1);
+		else
+			sp.stop(s_dog);
 	}
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -326,6 +332,9 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 		mContext = this;
 		bat_id=(ImageView)findViewById(R.id.battery_id);
 		rssi_id=(ImageView)findViewById(R.id.rssi_id);
+		rssi_id.setOnClickListener(this);
+		rssi_view=(TextView)findViewById(R.id.rssi_view);
+		rssi_view.setVisibility(View.GONE);
 		find_switch=(Switch)findViewById(R.id.switch1);
 		lossBar_id=(SeekBar)findViewById(R.id.lossBar);
 		lossText_id=(TextView)findViewById(R.id.lossText);
@@ -388,7 +397,8 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 	}
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch)
 	{
-		lossText_id.setText((progress+1)+" M");
+		String lossStr=getResources().getString(R.string.loss_range);
+		lossText_id.setText(lossStr+": "+(progress+1)+" M");
 	}
 	//停止拖动
 	public void onStopTrackingTouch(SeekBar seekBar)
@@ -485,12 +495,12 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
 			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_1));
 		else
 			rssi_id.setImageDrawable(getResources().getDrawable(R.drawable.signal_0));
+			rssi_view.setText(String.valueOf(rssi));
 		rssi=Math.abs(rssi);
 		if(rssi>(saveLossRange*3))
-		{
-			midAlert();
-		}
-		
+			midAlert(true);
+		else
+			midAlert(false);
 			
 	}
 /*
@@ -677,6 +687,26 @@ public class DeviceSettingActivity extends PreferenceActivity implements OnSeekB
         	return false;
 	
 		return true;
+	}
+	@Override
+	public void onClick(View v) {
+		// TODO 自动生成的方法存根
+		if(v==rssi_id)
+		{
+			rssi_count++;
+			if(rssi_count>=7)
+				rssi_view.setVisibility(View.VISIBLE);
+			else
+				rssi_view.setVisibility(View.GONE);
+			if(rssi_count>=5){
+		     	   new Handler().postDelayed(new Runnable(){    
+		   		    public void run() {    
+		   		    //execute the task    
+		   		    	rssi_count=0;
+		   		    }    
+		   		 }, 3000);
+			}
+		}
 	}
  
 

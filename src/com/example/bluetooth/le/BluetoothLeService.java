@@ -130,9 +130,10 @@ public class BluetoothLeService extends Service {
 
 		@Override
 		public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-			System.out.println("rssi = " + rssi);
+			System.out.println("leaf rssi = " + rssi);
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				broadcastUpdate(ACTION_READ_RSSI,rssi);
+				remoteRssi=rssi;
 			} else {
 				Log.w(TAG, "onServicesDiscovered received: " + status);
 			}

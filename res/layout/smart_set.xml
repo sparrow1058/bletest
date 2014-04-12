@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gay_bg"
+    android:gravity="center_horizontal" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" >
+
+        <ImageButton
+            android:id="@+id/bt_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ico_home" />
+
+        <ImageButton
+            android:id="@+id/bt_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/info_ico" />
+
+        <ImageButton
+            android:id="@+id/bt_off"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/off_ico" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/lossBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/loss_view"
+        android:layout_toRightOf="@+id/textView2"
+        android:max="30"
+        android:progress="5"
+        android:progressDrawable="@drawable/seekbar_img"
+        android:scrollbarStyle="outsideOverlay"
+        android:thumb="@drawable/thumb_ttpod"
+        android:thumbOffset="1px" />
+
+    <ImageView
+        android:id="@+id/bt_loss"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/textView1"
+        android:layout_marginRight="20dp"
+        android:src="@drawable/bt_off" />
+
+    <TextView
+        android:id="@+id/loss_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="40dp"
+        android:text="@string/loss_range"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/bt_call"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/bt_msg"
+        android:layout_alignTop="@+id/textView4"
+        android:src="@drawable/bt_on" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView4"
+        android:layout_below="@+id/bt_loss"
+        android:layout_marginTop="50dp"
+        android:text="@string/msg_alert"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/bt_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/bt_loss"
+        android:layout_alignTop="@+id/textView2"
+        android:src="@drawable/bt_off" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_below="@+id/lossBar"
+        android:layout_marginTop="50dp"
+        android:text="@string/loss_alert"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/bt_msg"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="27dp"
+        android:text="@string/call_alert"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</RelativeLayout>

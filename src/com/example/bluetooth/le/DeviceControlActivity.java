@@ -50,7 +50,7 @@ import com.example.bluetooth.le.R;
  * turn interacts with the Bluetooth LE API.
  */
 @SuppressLint("NewApi")
-public class DeviceControlActivity extends Activity {
+public class DeviceControlActivity extends Activity  {
 	private final static String TAG = DeviceControlActivity.class
 			.getSimpleName();
 

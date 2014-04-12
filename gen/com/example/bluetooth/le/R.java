@@ -30,40 +30,98 @@ public final class R {
         public static final int battery_bg3=0x7f020002;
         public static final int battery_bg4=0x7f020003;
         public static final int battery_full=0x7f020004;
-        public static final int ic_launcher=0x7f020005;
-        public static final int signal_0=0x7f020006;
-        public static final int signal_1=0x7f020007;
-        public static final int signal_2=0x7f020008;
-        public static final int signal_3=0x7f020009;
-        public static final int signal_4=0x7f02000a;
-        public static final int signal_5=0x7f02000b;
-        public static final int smartronix=0x7f02000c;
+        public static final int blank=0x7f020005;
+        public static final int bt_blue=0x7f020006;
+        public static final int bt_gay=0x7f020007;
+        public static final int bt_off=0x7f020008;
+        public static final int bt_on=0x7f020009;
+        public static final int button_add=0x7f02000a;
+        public static final int dog_3=0x7f02000b;
+        public static final int gay_bg=0x7f02000c;
+        public static final int home_ico=0x7f02000d;
+        public static final int ic_launcher=0x7f02000e;
+        public static final int ico_find=0x7f02000f;
+        public static final int ico_find_press=0x7f020010;
+        public static final int ico_home=0x7f020011;
+        public static final int info_ico=0x7f020012;
+        public static final int off_ico=0x7f020013;
+        public static final int scan_connect_button_select=0x7f020014;
+        public static final int scan_disconnect_button=0x7f020015;
+        public static final int scan_scan_button=0x7f020016;
+        public static final int seekbar_img=0x7f020017;
+        public static final int setting_ico=0x7f020018;
+        public static final int setting_linkloss_button_off=0x7f020019;
+        public static final int signal_0=0x7f02001a;
+        public static final int signal_01=0x7f02001b;
+        public static final int signal_02=0x7f02001c;
+        public static final int signal_03=0x7f02001d;
+        public static final int signal_04=0x7f02001e;
+        public static final int signal_05=0x7f02001f;
+        public static final int signal_1=0x7f020020;
+        public static final int signal_2=0x7f020021;
+        public static final int signal_3=0x7f020022;
+        public static final int signal_4=0x7f020023;
+        public static final int signal_5=0x7f020024;
+        public static final int sk_bg=0x7f020025;
+        public static final int sk_dot=0x7f020026;
+        public static final int sk_fill=0x7f020027;
+        public static final int sm_blank=0x7f020028;
+        public static final int sm_dot=0x7f020029;
+        public static final int sm_fill=0x7f02002a;
+        public static final int smart_black=0x7f02002b;
+        public static final int smart_com=0x7f02002c;
+        public static final int smart_gay=0x7f02002d;
+        public static final int smart_red=0x7f02002e;
+        public static final int smart_white=0x7f02002f;
+        public static final int smart_yellow=0x7f020030;
+        public static final int smartmain=0x7f020031;
+        public static final int smartpet_black=0x7f020032;
+        public static final int smartronix=0x7f020033;
+        public static final int smartronix_ico=0x7f020034;
+        public static final int thumb_ttpod=0x7f020035;
+        public static final int titlebar_setting_button=0x7f020036;
     }
     public static final class id {
-        public static final int battery_id=0x7f0a000c;
-        public static final int button1=0x7f0a0000;
-        public static final int call_id=0x7f0a0001;
-        public static final int connection_state=0x7f0a0007;
-        public static final int data_value=0x7f0a0008;
-        public static final int device_address=0x7f0a0006;
-        public static final int device_name=0x7f0a000a;
-        public static final int gatt_services_list=0x7f0a0009;
-        public static final int lossBar=0x7f0a0010;
-        public static final int lossText=0x7f0a0011;
-        public static final int loss_id=0x7f0a0003;
-        public static final int loss_range_id=0x7f0a0004;
-        public static final int menu_connect=0x7f0a0014;
-        public static final int menu_disconnect=0x7f0a0015;
-        public static final int menu_refresh=0x7f0a0013;
-        public static final int menu_scan=0x7f0a0016;
-        public static final int menu_stop=0x7f0a0017;
-        public static final int msg_id=0x7f0a0002;
-        public static final int rssi_id=0x7f0a000b;
-        public static final int seekBar1=0x7f0a0012;
-        public static final int switch1=0x7f0a000e;
-        public static final int textView1=0x7f0a000f;
-        public static final int textView2=0x7f0a000d;
-        public static final int warning_level_id=0x7f0a0005;
+        public static final int bat_id=0x7f0a0015;
+        public static final int battery_id=0x7f0a0000;
+        public static final int bt_call=0x7f0a0021;
+        public static final int bt_find=0x7f0a001d;
+        public static final int bt_home=0x7f0a001f;
+        public static final int bt_info=0x7f0a0018;
+        public static final int bt_loss=0x7f0a0020;
+        public static final int bt_msg=0x7f0a0022;
+        public static final int bt_off=0x7f0a0019;
+        public static final int bt_setting=0x7f0a0017;
+        public static final int btn_connect=0x7f0a0007;
+        public static final int btn_setting=0x7f0a0008;
+        public static final int connection_state=0x7f0a000a;
+        public static final int data_value=0x7f0a000b;
+        public static final int device_address=0x7f0a0009;
+        public static final int device_name=0x7f0a000d;
+        public static final int findme_btn=0x7f0a0003;
+        public static final int gatt_services_list=0x7f0a000c;
+        public static final int imageButton1=0x7f0a001e;
+        public static final int imageButton3=0x7f0a001c;
+        public static final int imageButton4=0x7f0a001b;
+        public static final int linearLayout1=0x7f0a0016;
+        public static final int linearLayout2=0x7f0a001a;
+        public static final int linearLayout3=0x7f0a0014;
+        public static final int lossBar=0x7f0a0011;
+        public static final int lossText=0x7f0a0012;
+        public static final int lossText_id=0x7f0a0002;
+        public static final int loss_view=0x7f0a0004;
+        public static final int menu_connect=0x7f0a0024;
+        public static final int menu_disconnect=0x7f0a0025;
+        public static final int menu_refresh=0x7f0a0023;
+        public static final int menu_scan=0x7f0a0026;
+        public static final int menu_stop=0x7f0a0027;
+        public static final int rssi_id=0x7f0a0001;
+        public static final int rssi_view=0x7f0a000e;
+        public static final int seekBar1=0x7f0a0013;
+        public static final int switch1=0x7f0a0010;
+        public static final int textView1=0x7f0a0005;
+        public static final int textView2=0x7f0a000f;
+        public static final int textView4=0x7f0a0006;
     }
     public static final class layout {
         public static final int actionbar_indeterminate_progress=0x7f030000;
@@ -72,8 +130,12 @@ public final class R {
         public static final int device_setting2=0x7f030003;
         public static final int gatt_services_characteristics=0x7f030004;
         public static final int listitem_device=0x7f030005;
-        public static final int preference_head=0x7f030006;
-        public static final int seekbar_1=0x7f030007;
+        public static final int menu_bar=0x7f030006;
+        public static final int preference_head=0x7f030007;
+        public static final int seekbar_1=0x7f030008;
+        public static final int smart_main=0x7f030009;
+        public static final int smart_set=0x7f03000a;
+        public static final int smart_setting=0x7f03000b;
     }
     public static final class menu {
         public static final int gatt_services=0x7f090000;
@@ -137,5 +199,8 @@ public final class R {
  All customizations that are NOT specific to a particular API-level can go here. 
          */
         public static final int AppTheme=0x7f080001;
+        /**  All customizations that are NOT specific to a particular API-level can go here. 
+         */
+        public static final int SmartronixTheme=0x7f080002;
     }
 }
